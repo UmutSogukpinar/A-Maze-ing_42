@@ -25,6 +25,12 @@ PIP = $(VENV)/bin/pip
 .PHONY: info install run debug clean lint lint-strict venv
 
 # ================================
+# Global Variables
+# ================================
+
+CONFIG ?= default_config.txt
+
+# ================================
 # Show available commands
 # ================================
 info:
@@ -41,16 +47,22 @@ info:
 # Create virtual environment
 # ================================
 venv:
-	@echo "$(BLUE)Creating virtual environment...$(RESET)"
-	@python3 -m venv $(VENV)
-	@echo "$(GREEN)Virtual environment created.$(RESET)"
+	@echo "$(BLUE)Checking virtual environment...$(RESET)"
+	@if [ ! -d $(VENV) ]; then \
+		python3 -m venv $(VENV); \
+		echo "$(GREEN)Virtual environment created.$(RESET)"; \
+	fi
 
 # ================================
 # Install dependencies into venv
 # ================================
 install: venv
 	@echo "$(BLUE)Installing dependencies from requirements.txt...$(RESET)"
-	@$(PIP) install -r requirements.txt
+	@if ! $(PIP) install -r requirements.txt >/dev/null 2>&1; then \
+		echo "$(RED)pip install failed. See logs by running manually:$(RESET)"; \
+		echo "$(YELLOW)  $(PIP) install -r requirements.txt$(RESET)"; \
+		exit 1; \
+	fi
 	@echo "$(GREEN)Dependencies installed.$(RESET)"
 
 # ================================
@@ -58,7 +70,7 @@ install: venv
 # ================================
 run: install
 	@echo "$(BLUE)Running the project...$(RESET)"
-	@$(PY) main.py
+	@$(PY) main.py --config_file $(CONFIG)
 	@echo "$(GREEN)Execution finished.$(RESET)"
 
 # ================================
