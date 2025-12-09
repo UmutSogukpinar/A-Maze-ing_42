@@ -28,7 +28,8 @@ PIP = $(VENV)/bin/pip
 # Global Variables
 # ================================
 
-CONFIG ?= default_config.txt
+MAIN_PROGRAM_FILE = a_maze_ing.py
+CONFIG ?= configs/default.txt
 
 # ================================
 # Show available commands
@@ -70,7 +71,7 @@ install: venv
 # ================================
 run: install
 	@echo "$(BLUE)Running the project...$(RESET)"
-	@$(PY) main.py --config_file $(CONFIG)
+	@$(PY) $(MAIN_PROGRAM_FILE) $(CONFIG)
 	@echo "$(GREEN)Execution finished.$(RESET)"
 
 # ================================

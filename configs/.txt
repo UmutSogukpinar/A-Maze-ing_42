@@ -1,0 +1,9 @@
+
+
+WIDTH=20
+HEIGHT=15
+ENTRY=0,0
+# Comment Line
+PERFECT=True
+OUTPUT_FILE=maze.txt
+
