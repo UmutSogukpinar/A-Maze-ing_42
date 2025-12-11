@@ -15,7 +15,14 @@ class Maze:
     DEFAULT_POS : int = 1
 
     def __init__(self, config_dict: dict[str, str]) -> None:
+
         try:
+            allowed_keys : set[str] = {"width", "height", "entry", "perfect", "output_file"}
+
+            for key in config_dict.keys():
+                if key not in allowed_keys:
+                    raise ValueError(f"Invalid variable in config file: '{key}'")
+                
             self.width = int(config_dict.get("width", self.DEFAULT_POS))
             self.height = int(config_dict.get("height", self.DEFAULT_POS))
             self.perfect = config_dict.get("perfect", "false").lower() == "true"

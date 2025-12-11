@@ -8,4 +8,3 @@ ENTRY=         0, 0 # maze start points
 PERFECT=True
 
 OUTPUT_FILE=maze.txt
-
