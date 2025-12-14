@@ -9,38 +9,47 @@ class Maze:
     width: int
     height: int
     entry: Point
+    exit: Point
     perfect: bool
     output_file: str
 
-    DEFAULT_POS : int = 1
+    __DEFAULT_ENTRY_POS : str = "0,0"
+    __DEFAULT_SIZE : int = 20
+    __MIN_MAP_SIZE_X : int = 9
+    __MIN_MAP_SIZE_Y : int = 7
+
 
     def __init__(self, config_dict: dict[str, str]) -> None:
 
-        try:
-            allowed_keys : set[str] = {"width", "height", "entry", "perfect", "output_file"}
+        allowed_keys : set[str] = {"width", "height", "entry", "exit", "perfect", "output_file"}
 
+        try:
             for key in config_dict.keys():
                 if key not in allowed_keys:
                     raise ValueError(f"Invalid variable in config file: '{key}'")
-                
-            self.width = int(config_dict.get("width", self.DEFAULT_POS))
-            self.height = int(config_dict.get("height", self.DEFAULT_POS))
+            
+            # Process the attributes
+            self.width = int(config_dict.get("width", self.__DEFAULT_SIZE))
+            self.height = int(config_dict.get("height", self.__DEFAULT_SIZE))
             self.perfect = config_dict.get("perfect", "false").lower() == "true"
             self.output_file = config_dict.get("output_file", "maze.txt")
 
-            if "entry" in config_dict:
-                self.entry = self.__parse_point(config_dict["entry"])
-            else:
-                self.entry = Point(0, 0)
+            self.entry = self.__parse_point(config_dict.get("entry", self.__DEFAULT_ENTRY_POS))
+            self.exit  = self.__parse_point(config_dict.get("exit", f"{self.width-1},{self.height-1}"))
+
+            # Check whether the attributes are valid or not
+            self.__is_maze_valid()
 
         except ValueError as e:
             raise ValueError(f"Configuration error: {e}")
-        
+    
+    
     def __repr__(self) -> str:
         return (
             f"Maze(width={self.width}, "
             f"height={self.height}, "
             f"entry={self.entry}, "
+            f"exit={self.exit}, "
             f"perfect={self.perfect}, "
             f"output_file='{self.output_file}')"
         )
@@ -70,3 +79,42 @@ class Maze:
             raise ValueError(f"Coordinates must be integers: {raw}")
 
         return (Point(int(x), int(y)))
+    
+    
+    def __is_maze_valid(self) -> None:
+        """
+        Validates maze configuration constraints.
+
+        This method ensures that:
+        - Maze dimensions satisfy the minimum size requirements.
+        - Entry and exit points are within maze bounds.
+        - Entry and exit points are not the same.
+
+        :param self: The Maze instance.
+        :type self: Maze
+        :return:
+        :rtype: None
+        :raises ValueError: If the maze size is smaller than the minimum
+            allowed dimensions, if entry or exit points are out of bounds,
+            or if entry and exit points are the same.
+        """
+
+        # Size validation (for 42 pattern)
+        if self.width < self.__MIN_MAP_SIZE_X or self.height < self.__MIN_MAP_SIZE_Y:
+            raise ValueError(
+                f"Maze size too small. Minimum size is "
+                f"{self.__MIN_MAP_SIZE_X}x{self.__MIN_MAP_SIZE_Y}."
+            )
+
+        # Entry / Exit bounds
+        for name, point in (("entry", self.entry), ("exit", self.exit)):
+            if point.x < 0 or point.y < 0:
+                raise ValueError(f"{name.capitalize()} point out of bounds: {point}")
+
+            if point.x >= self.width or point.y >= self.height:
+                raise ValueError(f"{name.capitalize()} point out of bounds: {point}")
+
+        # Entry and exit must differ
+        if self.entry == self.exit:
+            raise ValueError("Entry and exit points must be different.")
+
