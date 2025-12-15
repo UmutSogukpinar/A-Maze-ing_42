@@ -1,8 +1,12 @@
+import sys
+import os
+
 from argparse import ArgumentParser, Namespace, ArgumentTypeError
+
 from srcs.maze_config.maze import Maze
 from srcs.maze_config.parse_config import load_config
-import os
-import sys
+from srcs.maze_generator.maze_generator import MazeGenerator
+
 
 def main() -> None:
 
@@ -25,9 +29,11 @@ def main() -> None:
     args: Namespace = parser.parse_args()
 
     try:
-        parsed_config = load_config(args.config_file)
-        maze = Maze(parsed_config)
+        parsed_config : dict[str, str] = load_config(args.config_file)
+        maze : Maze = Maze(parsed_config)
         print(maze)
+        maze_generator : MazeGenerator = MazeGenerator(maze)
+        maze_generator.debug_print_cell_walls()
 
     except Exception as e:
         print(f"[Error]: {e}", file=sys.stderr)

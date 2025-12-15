@@ -1,14 +1,34 @@
-from typing import List
+import random
+
+from typing import Dict, List, Set, Tuple
+
 from srcs.maze_config.maze import Maze
 from srcs.maze_generator.cell import Cell
 
 class MazeGenerator:
+
+    __DIRECTIONS : Dict[str, Tuple[int, int]] = {
+        "north": (0, -1),
+        "south": (0,  1),
+        "east": (1,  0),
+        "west": (-1, 0),
+    }
+
+    __OPPOSITE_DIRS: Dict[str, str] = {
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east",
+    }
+
+
     def __init__(self, maze: Maze) -> None:
         self.maze = maze
-        self.grid: list[list[Cell]] = self.__init_grid()
+        self.grid: List[List[Cell]] = self.__init_grid()
+        self.__generate()
         self.__apply_42_mask()
 
-    def __init_grid(self) -> list[list[Cell]]:
+    def __init_grid(self) -> List[List[Cell]]:
         """
         Initialize the logical maze grid.
 
@@ -68,35 +88,128 @@ class MazeGenerator:
                     self.grid[offset_y + y][offset_x + x].blocked = True
 
     
-    def debug_print_grid(self) -> None:
+    def debug_print_cell_walls(self) -> None:
         """
-        Print the logical maze grid for debugging purposes.
+        Visualize the maze using ASCII characters.
 
-        The grid is printed row by row and represents the internal
-        logical state of each cell.
-
-        Legend:
-            B : Blocked cell (42 pattern)
-            . : Unvisited cell
-            V : Visited cell
-
-        :param self: The MazeGenerator instance.
-        :type self: MazeGenerator
-        :return: None
-        :rtype: None
+        Walls are represented by '#'
+        Corridors are represented by spaces ' '
         """
+
+        out_height = 2 * self.maze.height + 1
+        out_width  = 2 * self.maze.width  + 1
+
+        canvas: list[list[str]] = [
+            ["#" for _ in range(out_width)]
+            for _ in range(out_height)
+        ]
 
         for y in range(self.maze.height):
-            row = []
             for x in range(self.maze.width):
                 cell = self.grid[y][x]
 
+                cy = 2 * y + 1
+                cx = 2 * x + 1
+
+                # Blocked cells stay closed
                 if cell.blocked:
-                    row.append("B")
-                elif cell.visited:
-                    row.append("V")
-                else:
-                    row.append(".")
+                    continue
 
-            print(" ".join(row))
+                # Cell interior
+                canvas[cy][cx] = " "
 
+                # Open walls
+                if not cell.north:
+                    canvas[cy - 1][cx] = " "
+                if not cell.south:
+                    canvas[cy + 1][cx] = " "
+                if not cell.west:
+                    canvas[cy][cx - 1] = " "
+                if not cell.east:
+                    canvas[cy][cx + 1] = " "
+
+        for row in canvas:
+            print("".join(row))
+
+
+    def __generate(self) -> None:
+
+        ALGOS : set[str] = {"dfs"}
+
+        if self.maze.algorithm not in ALGOS:
+            raise ValueError(f"Unsupported algorithm: {self.maze.algorithm}")
+        
+        if self.maze.algorithm == "dfs":
+            start_cell : Cell = self.grid[self.maze.entry.y][self.maze.entry.x]
+            self.__dfs(start_cell)
+
+    def __dfs(self, currentCell: Cell) -> None:
+        """
+        Perform depth-first search maze generation from the given cell.
+
+        :param currentCell: Current cell for DFS
+        :type cell: Cell
+        :return:
+        :rtype: None
+        """
+
+        currentCell.visited = True
+
+        neighbors = self.__get_unvisited_neighbors(currentCell)
+        random.shuffle(neighbors)
+
+        for direction, neighbor in neighbors:
+            if not neighbor.visited:
+                self.__remove_wall(currentCell, neighbor, direction)
+                self.__dfs(neighbor)
+
+
+    def __get_unvisited_neighbors(self, cell: Cell) -> list[tuple[str, Cell]]:
+        """
+        Return all unvisited and non-blocked neighboring cells.
+
+        :param cell: Current cell
+        :type cell: Cell
+        :return: List of (direction, neighbor cell) tuples
+        :rtype: list[tuple[str, Cell]]
+        """
+
+        neighbors: list[tuple[str, Cell]] = []
+
+        for direction, (dx, dy) in self.__DIRECTIONS.items():
+            nx : int = cell.x + dx
+            ny : int = cell.y + dy
+
+            if nx < 0 or ny < 0:
+                continue
+            if nx >= self.maze.width or ny >= self.maze.height:
+                continue
+
+            neighbor : Cell = self.grid[ny][nx]
+
+            if neighbor.blocked or neighbor.visited:
+                continue
+
+            neighbors.append((direction, neighbor))
+
+        return (neighbors)
+
+
+    def __remove_wall(self, a: Cell, b: Cell, direction: str) -> None:
+        """
+        Remove the wall between two adjacent cells.
+
+        :param a: First cell
+        :type a: Cell
+        :param b: Second cell
+        :type b: Cell
+        :param direction: Direction from a to b
+        :type direction: str
+        :return:
+        :rtype: None
+        """
+
+        setattr(a, direction, False)
+        setattr(b, self.__OPPOSITE_DIRS[direction], False)
+
+        

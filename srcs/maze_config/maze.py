@@ -12,6 +12,7 @@ class Maze:
     exit: Point
     perfect: bool
     output_file: str
+    algorithm: str
 
     __DEFAULT_ENTRY_POS : str = "0,0"
     __DEFAULT_SIZE : int = 20
@@ -21,7 +22,7 @@ class Maze:
 
     def __init__(self, config_dict: dict[str, str]) -> None:
 
-        allowed_keys : set[str] = {"width", "height", "entry", "exit", "perfect", "output_file"}
+        allowed_keys : set[str] = {"width", "height", "entry", "exit", "perfect", "output_file", "algorithm"}
 
         try:
             for key in config_dict.keys():
@@ -33,9 +34,9 @@ class Maze:
             self.height = int(config_dict.get("height", self.__DEFAULT_SIZE))
             self.perfect = config_dict.get("perfect", "false").lower() == "true"
             self.output_file = config_dict.get("output_file", "maze.txt")
-
             self.entry = self.__parse_point(config_dict.get("entry", self.__DEFAULT_ENTRY_POS))
             self.exit  = self.__parse_point(config_dict.get("exit", f"{self.width-1},{self.height-1}"))
+            self.algorithm = config_dict.get("algorithm", "dfs").lower()
 
             # Check whether the attributes are valid or not
             self.__is_maze_valid()
@@ -51,7 +52,8 @@ class Maze:
             f"entry={self.entry}, "
             f"exit={self.exit}, "
             f"perfect={self.perfect}, "
-            f"output_file='{self.output_file}')"
+            f"output_file='{self.output_file}', "
+            f"algorithm='{self.algorithm}')"
         )
 
 
