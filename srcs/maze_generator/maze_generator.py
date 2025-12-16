@@ -25,8 +25,9 @@ class MazeGenerator:
     def __init__(self, maze: Maze) -> None:
         self.maze = maze
         self.grid: List[List[Cell]] = self.__init_grid()
-        self.__generate()
         self.__apply_42_mask()
+        self.__generate()
+        self.__generate_output_file()
 
     def __init_grid(self) -> List[List[Cell]]:
         """
@@ -44,6 +45,29 @@ class MazeGenerator:
             [Cell(x=x, y=y) for x in range(self.maze.width)]
             for y in range(self.maze.height)
         ]
+    
+
+    def __generate_output_file(self) -> None:
+        """
+        Generate the output file representing the maze.
+
+        This method writes the maze structure to a file in a specific
+        format, including walls and corridors.
+
+        :param self: The MazeGenerator instance.
+        :return:
+        :rtype: None
+        """
+
+        with open(self.maze.output_file, "w", encoding="utf-8") as file:
+            
+            for row in self.grid:
+                line : str = "".join(cell.encode_walls() for cell in row)
+                file.write(line + "\n")
+
+            file.write("\n") # Separate rows by a blank line
+            file.write(self.maze.entry.x.__str__() + " " + self.maze.entry.y.__str__() + "\n")
+            file.write(self.maze.exit.x.__str__() + " " + self.maze.exit.y.__str__() + "\n")
     
 
     def __apply_42_mask(self) -> None:
@@ -174,7 +198,7 @@ class MazeGenerator:
         :rtype: list[tuple[str, Cell]]
         """
 
-        neighbors: list[tuple[str, Cell]] = []
+        neighbors: List[Tuple[str, Cell]] = []
 
         for direction, (dx, dy) in self.__DIRECTIONS.items():
             nx : int = cell.x + dx
