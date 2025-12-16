@@ -42,11 +42,11 @@ class Cell:
 
         if self.north:
             code |= 1
-        if self.south:
-            code |= 2
-        if self.west:
-            code |= 4
         if self.east:
+            code |= 2
+        if self.south:
+            code |= 4
+        if self.west:
             code |= 8
 
         return (hex_digits[code])
