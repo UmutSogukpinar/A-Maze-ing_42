@@ -31,6 +31,31 @@ class Cell:
         self.east  = True
         self.west  = True
 
+    
+    def __eq__(self, other: object) -> bool:
+        """
+        Check equality with another Cell.
+
+        :param other: The other Cell to compare with.
+        :type other: Cell
+        :return: True if the cells are equal, False otherwise.
+        :rtype: bool
+        """
+        if not isinstance(other, Cell):
+            return (False)
+    
+        return (self.x == other.x and self.y == other.y)
+
+
+    def __hash__(self) -> int:
+        """
+        Return a hash value for the cell.
+
+        :return: A hash value for the cell.
+        :rtype: int
+        """
+        return (hash((self.x, self.y)))
+
 
     def __lt__(self, other: Cell) -> bool:
         """

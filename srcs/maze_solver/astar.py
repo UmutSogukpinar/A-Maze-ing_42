@@ -30,15 +30,11 @@ def solve_astar(
     start.f = start.g + start.h
     start.parent = None
 
-    heapq.heappush(open_heap, (start.f, start))
+    heapq.heappush(open_heap, (start))
 
     while open_heap:
 
-        current : Cell
-        p : int
-
-        # No need for the priority value here
-        p, current = heapq.heappop(open_heap)
+        current : Cell = heapq.heappop(open_heap)
 
         if current == goal:
             return (reconstruct_path(goal))

@@ -4,6 +4,7 @@ from typing import Dict, List, Set, Tuple
 
 from srcs.maze_config.maze import Maze
 from srcs.maze_generator.cell import Cell
+from srcs.maze_solver import astar
 
 class MazeGenerator:
 
@@ -62,6 +63,9 @@ class MazeGenerator:
         :rtype: None
         """
 
+        shortest_path : list[Cell] = []
+        shortest_path_dirs : list[str] = []
+
         with open(self.maze.output_file, "w", encoding="utf-8") as file:
             
             for row in self.grid:
@@ -71,7 +75,12 @@ class MazeGenerator:
             file.write("\n") # Separate rows by a blank line
             file.write(self.maze.entry.x.__str__() + "," + self.maze.entry.y.__str__() + "\n")
             file.write(self.maze.exit.x.__str__() + "," + self.maze.exit.y.__str__() + "\n")
-    
+            
+            shortest_path = astar.solve_astar(self.grid, 
+                                              self.grid[self.maze.entry.y][self.maze.entry.x],
+                                              self.grid[self.maze.exit.y][self.maze.exit.x])
+            shortest_path_dirs = astar.path_to_dir(shortest_path)
+            file.write("".join(shortest_path_dirs) + "\n")
 
     def __apply_42_mask(self) -> None:
         """
