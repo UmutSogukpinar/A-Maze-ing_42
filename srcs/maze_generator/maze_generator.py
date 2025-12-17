@@ -21,6 +21,9 @@ class MazeGenerator:
         "west": "east",
     }
 
+    maze : Maze
+    grid : List[List[Cell]]
+
 
     def __init__(self, maze: Maze) -> None:
         self.maze = maze
@@ -66,8 +69,8 @@ class MazeGenerator:
                 file.write(line + "\n")
 
             file.write("\n") # Separate rows by a blank line
-            file.write(self.maze.entry.x.__str__() + " " + self.maze.entry.y.__str__() + "\n")
-            file.write(self.maze.exit.x.__str__() + " " + self.maze.exit.y.__str__() + "\n")
+            file.write(self.maze.entry.x.__str__() + "," + self.maze.entry.y.__str__() + "\n")
+            file.write(self.maze.exit.x.__str__() + "," + self.maze.exit.y.__str__() + "\n")
     
 
     def __apply_42_mask(self) -> None:

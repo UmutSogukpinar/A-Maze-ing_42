@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class Cell:
     x : int
     y : int
@@ -10,6 +12,12 @@ class Cell:
     north : bool
     south : bool
 
+    # ==== solve state (A*) ====
+
+    g = float("inf")
+    h = 0
+    f = float("inf")
+    parent : Cell | None = None
 
     def __init__(self, x: int, y: int) -> None:
         self.x = x
@@ -22,6 +30,22 @@ class Cell:
         self.south = True
         self.east  = True
         self.west  = True
+
+
+    def __lt__(self, other: Cell) -> bool:
+        """
+        Less-than comparison for A* priority queue.
+
+        :param other: The other cell to compare with
+        :type other: Cell
+        :return: True if this cell has a lower f value than the other
+        :rtype: bool
+        """
+
+        if self.f != other.f:
+            return self.f < other.f
+        
+        return (self.y, self.x) < (other.y, other.x)
 
     
     def encode_walls(self) -> str:
